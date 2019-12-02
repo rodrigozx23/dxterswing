@@ -1,0 +1,434 @@
+CREATE DATABASE BD;
+
+USE BD;
+
+CREATE TABLE Tb_Blocker
+(block boolean);
+
+CREATE PROCEDURE sp_obtener_block()
+	Select * from Tb_blocker;
+
+CREATE PROCEDURE sp_actualizar_block(in b boolean)
+	Update Tb_Blocker set block = b;
+
+CREATE TABLE Tb_Usuario
+(idUsuario int AUTO_INCREMENT PRIMARY KEY,
+usuario varchar(25),
+password varchar (10),
+tipo int,
+estado int);
+
+CREATE PROCEDURE sp_insertar_usuario
+(usuario varchar(25),
+password varchar (10),
+tipo int,
+estado int)
+Insert into Tb_usuario(usuario,password,tipo,estado)
+values(usuario,password,tipo,estado);
+
+CREATE PROCEDURE sp_actualizar_usuario
+(in id int,
+us varchar(25),
+pass varchar (10),
+t int,
+est int)
+Update Tb_usuario set 
+usuario = us,
+password = pass,
+tipo = t,
+estado = est 
+where idusuario = id;
+
+CREATE PROCEDURE sp_eliminar_usuario(in id int)
+	Update Tb_usuario set estado = 0 where idusuario = id;
+
+CREATE PROCEDURE sp_buscar_usuario(in id int)
+	Select * from Tb_usuario Where idusuario = id;
+
+CREATE PROCEDURE sp_listar_usuario()
+	Select * from Tb_usuario;
+
+CREATE PROCEDURE sp_listar_usuarioAdmin()
+	Select * from Tb_usuario where estado in (1,2) and tipo in (2,3);
+
+create procedure sp_ingresar(usu varchar(25),pass varchar(10))
+	Select idUsuario from Tb_usuario where usuario = usu and password = pass;
+
+CREATE PROCEDURE sp_cambiar_contraseña(id int, pass varchar(10))
+	Update Tb_usuario set password = pass where idusuario = id;
+
+CREATE PROCEDURE sp_contraseña_cambiada(in id int)
+	Update Tb_usuario set estado = 1 where idusuario = id;
+
+
+
+
+CREATE TABLE Tb_Categoria
+(idCategoria int AUTO_INCREMENT PRIMARY KEY,
+nombre varchar(25),
+estado int);
+
+CREATE PROCEDURE sp_insertar_categoria
+(nombre varchar(25),
+estado int)
+Insert into Tb_categoria(nombre,estado)
+values(nombre,estado);
+
+CREATE PROCEDURE sp_actualizar_categoria
+(in id int,
+in nom varchar(25),
+in est int)
+Update Tb_categoria set nombre = nom, estado = est where idCategoria = id;
+
+CREATE PROCEDURE sp_eliminar_categoria(in id int)
+	Update Tb_Categoria set estado = 0 where idCategoria = id;
+
+CREATE PROCEDURE sp_buscar_categoria(in id int)
+	Select * from Tb_categoria Where idcategoria = id;
+
+CREATE PROCEDURE sp_listar_categoria()
+	Select * from Tb_categoria;
+
+CREATE PROCEDURE sp_listar_categoriaAdmin()
+	Select * from Tb_categoria where estado = 1;
+
+
+
+
+CREATE TABLE Tb_SubCategoria
+(idSubCategoria int AUTO_INCREMENT PRIMARY KEY,
+nombre varchar(25),
+idCategoria int,
+estado int);
+
+ALTER TABLE Tb_SubCategoria ADD FOREIGN KEY (idCategoria)
+REFERENCES Tb_Categoria(idCategoria);
+
+CREATE PROCEDURE sp_insertar_subcategoria
+(nombre varchar(25),
+idCategoria int,
+estado int)
+Insert into Tb_Subcategoria(nombre,idCategoria,estado)
+values(nombre,idCategoria,estado);
+
+CREATE PROCEDURE sp_eliminar_subcategoria(in id int)
+	Update Tb_Subcategoria set estado = 0 where idSubCategoria = id;
+
+CREATE PROCEDURE sp_actualizar_subcategoria
+(in id int,
+in nom varchar(25),
+in idCat int,
+est int)
+Update Tb_Subcategoria set nombre = nom, idCategoria = idCat, estado = est where idSubCategoria = id;
+
+CREATE PROCEDURE sp_buscar_subcategoria(in id int)
+	Select * from Tb_Subcategoria Where idSubcategoria = id;
+
+CREATE PROCEDURE sp_listar_subcategoria()
+	Select * from Tb_Subcategoria;
+
+CREATE PROCEDURE sp_listar_subcategoriaAdmin()
+	Select tb_SubCategoria.idsubcategoria, tb_SubCategoria.nombre, tb_SubCategoria.idcategoria, tb_Categoria.nombre as Categoria, tb_SubCategoria.estado from Tb_Subcategoria,Tb_Categoria 
+	where tb_SubCategoria.IdCategoria = tb_Categoria.idCategoria and tb_SubCategoria.estado = 1;
+
+CREATE PROCEDURE sp_filtrar_subcategoria_cat(id int)
+	Select * from Tb_Subcategoria where idCategoria = id and estado = 1;
+
+
+
+
+CREATE TABLE Tb_Producto
+(idProducto int AUTO_INCREMENT PRIMARY KEY,
+nombre varchar(30),
+costo double,
+idCategoria int,
+idSubCategoria int,
+estado int);
+
+ALTER TABLE Tb_Producto ADD FOREIGN KEY (idCategoria)
+REFERENCES Tb_Categoria(idCategoria);
+
+ALTER TABLE Tb_Producto ADD FOREIGN KEY (idSubCategoria)
+REFERENCES Tb_SubCategoria(idSubCategoria);
+
+CREATE PROCEDURE sp_insertar_Producto
+(nombre varchar(30),
+costo double,
+idCategoria int,
+idSubCategoria int,
+estado int)
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado)
+values (nombre,costo,idcategoria,idSubCategoria,estado);
+
+CREATE PROCEDURE sp_actualizar_Producto
+(id int,
+nom varchar(30),
+cos double,
+idCat int,
+idSub int,
+est int)
+Update Tb_Producto set 
+nombre = nom,costo = cos,idCategoria = idCat, idSubCategoria = idSub, estado = est where idProducto = id;
+
+CREATE PROCEDURE sp_eliminar_Producto(in id int)
+	Update Tb_Producto set estado = 0 where idProducto = id;
+
+CREATE PROCEDURE sp_buscar_Producto(in id int)
+	Select * from Tb_Producto Where idProducto = id;
+
+CREATE PROCEDURE sp_listar_Producto()
+	Select * from tb_Producto;
+
+CREATE PROCEDURE sp_listar_ProductoAdmin()
+	Select idProducto,tb_Producto.nombre,costo,tb_Producto.idcategoria,tb_categoria.nombre as categoria,tb_Producto.idsubcategoria,tb_subcategoria.nombre as subcategoria, tb_producto.estado from tb_Producto, tb_categoria, tb_SubCategoria
+	where tb_Producto.idcategoria = tb_categoria.idcategoria and tb_Producto.idsubcategoria = tb_SubCategoria.idSubCategoria and tb_producto.estado = 1
+	order by idProducto;
+
+CREATE PROCEDURE sp_filtrar_Producto_cat(in id int)
+	Select idProducto,tb_Producto.nombre,costo,tb_Producto.idcategoria,tb_categoria.nombre as categoria,tb_Producto.idsubcategoria,tb_subcategoria.nombre as subcategoria, tb_producto.estado from tb_Producto, tb_categoria, tb_SubCategoria
+	where tb_Producto.idcategoria = tb_categoria.idcategoria and tb_Producto.idsubcategoria = tb_SubCategoria.idSubCategoria and tb_Producto.idCategoria = id and tb_producto.estado = 1;
+
+CREATE PROCEDURE sp_filtrar_Producto_subcat(in id int)
+	Select idProducto,tb_Producto.nombre,costo,tb_Producto.idcategoria,tb_categoria.nombre as categoria,tb_Producto.idsubcategoria,tb_subcategoria.nombre as subcategoria, tb_producto.estado from tb_Producto, tb_categoria, tb_SubCategoria
+	where tb_Producto.idcategoria = tb_categoria.idcategoria and tb_Producto.idsubcategoria = tb_SubCategoria.idSubCategoria and tb_Producto.idSubCategoria = id and tb_producto.estado = 1;
+
+
+
+
+CREATE TABLE Tb_Pedido
+(idPedido int AUTO_INCREMENT PRIMARY KEY,
+idUsuario int,
+fecha Datetime,
+total double,
+numMesa int,
+estado int);
+
+CREATE PROCEDURE sp_insertar_pedido
+(idUsuario int,
+fecha Datetime,
+total double,
+numMesa int,
+estado int)
+Insert into Tb_pedido(idUsuario,fecha,total,numMesa,estado)
+values(idUsuario,fecha,total,numMesa,estado);
+
+CREATE PROCEDURE sp_actualizar_pedido
+(in id int,
+idUs int,
+fec Datetime,
+Tot double,
+numM int,
+est int)
+Update Tb_pedido set 
+idUsuario = idus,fecha=fec,total = tot,numMesa = numM, estado = est where idpedido = id;
+
+CREATE PROCEDURE sp_eliminar_pedido(in id int)
+	delete from Tb_pedido where idpedido = id;
+
+CREATE PROCEDURE sp_buscar_pedido(in id int)
+	Select * from Tb_pedido Where idpedido = id;
+
+CREATE PROCEDURE sp_buscar_mayor()
+	Select MAX(idPedido) from Tb_pedido;
+
+CREATE PROCEDURE sp_listar_pedido()
+	Select * from Tb_pedido;
+
+CREATE PROCEDURE sp_verificar_mesa(in num int)
+	Select * from Tb_pedido where numMesa = num and estado = 0;
+
+CREATE PROCEDURE sp_actualizar_pedidoest(in id int, in est int)
+	Update Tb_pedido set estado = est where idpedido = id;
+
+CREATE PROCEDURE sp_calcular_total(in id int)
+	Select SUM(tb_producto.Costo * tb_pedidodetalle.Cantidad) from Tb_pedido,Tb_PedidoDetalle,Tb_Producto where Tb_Pedido.idpedido = tb_PedidoDetalle.idpedido and tb_PedidoDetalle.idProducto = tb_Producto.idProducto and tb_pedidodetalle.estado = 1 and tb_pedido.idpedido = id;
+
+CREATE PROCEDURE sp_actualizar_total(in id int,in tot int)
+	Update Tb_pedido set total = tot where idpedido = id;
+
+CREATE PROCEDURE sp_calcular_total_Diario(in fec Datetime)
+	Select SUM(tb_producto.Costo * tb_pedidodetalle.Cantidad) 
+	from Tb_pedido,Tb_PedidoDetalle,Tb_Producto 
+	where Tb_Pedido.idpedido = tb_PedidoDetalle.idpedido 
+	and tb_PedidoDetalle.idProducto = tb_Producto.idProducto 
+	and tb_pedidodetalle.estado = 1 and tb_pedido.estado = 1 and fecha = fec;
+
+CREATE PROCEDURE sp_Listar_Diario(in fec Datetime)
+	Select Tb_pedidodetalle.idProducto,tb_producto.nombre,SUM(cantidad),tb_producto.costo,SUM(tb_producto.Costo * tb_pedidodetalle.Cantidad)
+	from Tb_pedido,Tb_PedidoDetalle,Tb_Producto 
+	where Tb_Pedido.idpedido = tb_PedidoDetalle.idpedido 
+	and tb_PedidoDetalle.idProducto = tb_Producto.idProducto 
+	and tb_pedidodetalle.estado = 1 and tb_pedido.estado = 1 and fecha = fec
+	group by tb_PedidoDetalle.idProducto order by SUM(cantidad) desc;
+
+CREATE PROCEDURE sp_calcular_total_mensual(in mes int, in año int)
+	Select SUM(tb_producto.Costo * tb_pedidodetalle.Cantidad) 
+	from Tb_pedido,Tb_PedidoDetalle,Tb_Producto 
+	where Tb_Pedido.idpedido = tb_PedidoDetalle.idpedido 
+	and tb_PedidoDetalle.idProducto = tb_Producto.idProducto 
+	and tb_pedidodetalle.estado = 1 and tb_pedido.estado = 1 and Month(fecha) = mes and Year(fecha) = año;
+
+CREATE PROCEDURE sp_Listar_Mes(in mes int, in año int)
+	Select Tb_pedidodetalle.idProducto,tb_producto.nombre,SUM(cantidad),tb_producto.costo,SUM(tb_producto.Costo * tb_pedidodetalle.Cantidad)
+	from Tb_pedido,Tb_PedidoDetalle,Tb_Producto 
+	where Tb_Pedido.idpedido = tb_PedidoDetalle.idpedido 
+	and tb_PedidoDetalle.idProducto = tb_Producto.idProducto 
+	and tb_pedidodetalle.estado = 1 and tb_pedido.estado = 1 and Month(fecha) = mes and Year(fecha) = año
+	group by tb_PedidoDetalle.idProducto order by SUM(cantidad) desc;
+
+
+
+
+CREATE TABLE Tb_PedidoDetalle
+(idPedDet int AUTO_INCREMENT PRIMARY KEY,
+idProducto int,
+cantidad int,
+idPedido int,
+estado int);
+
+ALTER TABLE Tb_PedidoDetalle ADD FOREIGN KEY (idProducto)
+REFERENCES Tb_Producto (idProducto);
+
+ALTER TABLE Tb_PedidoDetalle ADD FOREIGN KEY (idPedido)
+REFERENCES Tb_Pedido(idPedido); 	
+
+CREATE PROCEDURE sp_insertar_pedidoDet
+(idProducto int,
+cantidad int,
+idPedido int,
+estado int)
+Insert into Tb_pedidoDetalle (idProducto,cantidad,idPedido,estado)
+values(idProducto,cantidad,idPedido,estado);
+
+CREATE PROCEDURE sp_eliminar_pedidoDet(in id int)
+	Update Tb_PedidoDetalle set estado = 0 where idpeddet = id;
+
+CREATE PROCEDURE sp_actualizar_pedidoDet
+(id int,
+idProd int,
+can int,
+idped int,
+est int)
+Update Tb_PedidoDetalle set 
+idProducto = idProd, cantidad = can, idpedido = idped, estado = est where idpedDet = id;
+
+CREATE PROCEDURE sp_buscar_pedidoDet(in id int)
+	Select idPedDet, tb_PedidoDetalle.idProducto, tb_Producto.nombre, cantidad, idPedido, tb_PedidoDetalle.estado from Tb_PedidoDetalle, tb_Producto
+	where tb_PedidoDetalle.idProducto = tb_Producto.idProducto and idPedDet = id;
+
+CREATE PROCEDURE sp_listar_pedidoDet()
+	Select idPedDet, tb_PedidoDetalle.idProducto, tb_Producto.nombre, cantidad, idPedido, estado from Tb_PedidoDetalle, tb_Producto
+	where tb_PedidoDetalle.idProducto = tb_Producto.idProducto and estado = 1;
+
+CREATE PROCEDURE sp_listar_Detalle(in id int)
+	Select idPedDet, tb_PedidoDetalle.idProducto, tb_Producto.nombre, cantidad, tb_producto.costo, idPedido, tb_pedidodetalle.estado from Tb_PedidoDetalle, tb_Producto
+	where tb_PedidoDetalle.idProducto = tb_Producto.idProducto and tb_PedidoDetalle.idPedido = id and tb_pedidodetalle.estado = 1;
+
+CREATE PROCEDURE sp_verificar_producto(in idped int, in idpro int)
+	Select * from Tb_PedidoDetalle Where idPedido = idped and idProducto = idpro;
+
+CREATE PROCEDURE sp_actualizar_cant(id int, can int)
+	Update Tb_PedidoDetalle set cantidad = can where idpeddet = id;
+
+CREATE PROCEDURE sp_actualizar_peddetest(id int, est int)
+	Update Tb_PedidoDetalle set estado = est where idpeddet = id;
+
+
+Insert into Tb_Blocker values(true);
+
+Insert into Tb_Usuario (usuario,password,tipo,estado) values ('666','boss',0,1);
+Insert into Tb_Usuario (usuario,password,tipo,estado) values ('administrador','12345678',1,2);
+
+Insert into Tb_Categoria(nombre,estado) values ('Comida',1);
+Insert into Tb_Categoria(nombre,estado) values ('Barra',1);
+
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('STARTER',1,1);
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('SANDWICH',1,1);
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('HAMBURGUESAS',1,1);
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('GRILL',1,1);
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('SALCHIPAPAS',1,1);
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('EXTRAS',1,1);
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('REFRESCANTES',2,1);
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('JUGOS',2,1);
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('COCKTAILRef',2,1);
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('COCKTAILDig',2,1);
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('CERVEZAS',2,1);
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('CAFETERIA',2,1);
+Insert into Tb_SubCategoria(nombre,idCategoria,estado) values ('GASEOSA',2,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('SmkBqqWINGS',7.90,1,1,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('SmkBqqRIBS',9.90,1,1,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('SmkBqqCk',14.90,1,1,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('LomoSaltado',8.90,1,2,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('SmkCk',8.90,1,2,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('SmkRibs',8.90,1,2,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('KangreBurg',10.90,1,3,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Royal',11.90,1,3,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Tejana',12.90,1,3,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('California',14.90,1,3,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Buffalo',18.90,1,3,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('F.Mignion',20.90,1,4,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Ck Ciboulette',16.90,1,4,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Lomo Madeira',24.90,1,4,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Salchipapa Cls',8.90,1,5,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Salchibuffalo',12.90,1,5,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Ensalada Fria',10.90,1,6,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Ensalada Caliente',12.90,1,6,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Papas Andinas',5.90,1,6,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('L.Americana',4.90,2,7,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('IcedTea',4.90,2,7,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('ChichaMorada',4.90,2,7,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('MaracuMango',7.90,2,8,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Travieso',7.90,2,8,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('SandiaLove',7.90,2,8,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Mojito Clsc',8.90,2,9,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Mojito Mrcya',8.90,2,9,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Emlnte Mojito',9.90,2,9,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Chilcano',7.90,2,9,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Chilcano Mrcya',7.90,2,9,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Chilcano Buffalo',8.90,2,9,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Emlnte Mojito',9.90,2,9,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Te Piteado',6.90,2,10,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Vino Caliente',7.90,2,10,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Sangria',8.90,2,10,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Ristreto',4.90,2,11,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Expreso',3.90,2,11,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Machiato',3.90,2,11,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Americano',3.90,2,11,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Latte',4.90,2,11,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Capuchino',4.90,2,11,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Mocachino',5.90,2,11,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Infusiones',3.90,2,11,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Barbarian',14.90,2,12,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('PilsenChop',5.90,2,12,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Cuzco Chop',6.90,2,12,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Negra',8.90,2,12,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Trigo',9.90,2,12,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Corona',8.90,2,12,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Heineken',9.90,2,12,1);
+
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('CocaCola 500ml',3.90,2,13,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('CocaColaZr 500ml',3.90,2,13,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Inka Cola 500ml',3.90,2,13,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Fanta 500ml',3.90,2,13,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('Sprite 500ml',3.90,2,13,1);
+Insert into Tb_Producto(nombre,costo,idCategoria,idSubCategoria,estado) values ('DrPepper',5.90,2,13,1);
+
+Insert into Tb_pedido(idUsuario,fecha,total,numMesa,estado) values(1,'2016-12-12',0,1,1);
+Insert into Tb_pedidoDetalle (idProducto,cantidad,idPedido,estado) values(1,3,1,1);
+Insert into Tb_pedidoDetalle (idProducto,cantidad,idPedido,estado) values(2,2,1,1);
+
+Insert into Tb_pedido(idUsuario,fecha,total,numMesa,estado) values(1,'2016-12-13',0,1,1);
+Insert into Tb_pedidoDetalle (idProducto,cantidad,idPedido,estado) values(1,2,2,1);
+Insert into Tb_pedidoDetalle (idProducto,cantidad,idPedido,estado) values(2,1,2,1);
